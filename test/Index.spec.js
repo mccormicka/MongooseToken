@@ -154,5 +154,63 @@ describe('NodeAuthPassword Tests', function () {
             });
         });
 
+        it('Not be able to get an objects token if none created', function (done) {
+            Model.create({}, function (err, model) {
+                expect(err).toBeNull();
+                expect(model).not.toBeNull();
+                if (model) {
+                    model.getRandomTokenName(function (err, token) {
+                        expect(err).toBeNull();
+                        expect(token).toBeUndefined();
+                        done(err);
+                    });
+                } else {
+                    done('Error creating token');
+                }
+            });
+        });
+
+
+        it('Be able to delete an objects token Static', function (done) {
+            Model.create({}, function (err, model) {
+                expect(err).toBeNull();
+                expect(model).not.toBeNull();
+                if (model) {
+                    Model.removeRandomTokenName(model, function (err, result) {
+                        expect(err).toBeNull();
+                        expect(result).not.toBeNull();
+                        model.getRandomTokenName(function (err, token) {
+                            expect(err).toBeNull();
+                            expect(token).toBeUndefined();
+                            done(err);
+                        });
+                    });
+                } else {
+                    done('Error creating token');
+                }
+            });
+        });
+
+        it('Be able to delete an objects token', function (done) {
+            Model.create({}, function (err, model) {
+                expect(err).toBeNull();
+                expect(model).not.toBeNull();
+                if (model) {
+                    model.removeRandomTokenName(function (err, result) {
+                        expect(err).toBeNull();
+                        expect(result).not.toBeNull();
+                        model.getRandomTokenName(function (err, token) {
+                            expect(err).toBeNull();
+                            expect(token).toBeUndefined();
+                            done(err);
+                        });
+                    });
+                } else {
+                    done('Error creating token');
+                }
+            });
+        });
+
+
     });
 });
