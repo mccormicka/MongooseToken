@@ -56,9 +56,10 @@ describe('MongooseToken Tests', function () {
                         model.createRandomTokenName(function (err, result) {
                             expect(err).toBeNull();
                             expect(result).not.toBeNull();
-                            Model.findRandomTokenName(model, function (err, token) {
+                            Model.findRandomTokenName(model, function (err, tokens) {
                                 expect(err).toBeNull();
-                                expect(model._id.toString()).toBe(token.modelId);
+                                expect(tokens).toBeDefined();
+                                expect(model._id.toString()).toBe(tokens[0].modelId);
                                 done(err);
                             });
                         });
@@ -197,6 +198,7 @@ describe('MongooseToken Tests', function () {
                     }
                 });
             });
+
             it('Return an error if it cant find an object by its token secret', function (done) {
                 Model.create({name:'one'}, {name:'two'}, function (err, model, model2) {
                     expect(err).toBeNull();
@@ -227,7 +229,7 @@ describe('MongooseToken Tests', function () {
                     if (model) {
                         model.findRandomTokenName(function (err, token) {
                             expect(err).toBeNull();
-                            expect(token).toBeUndefined();
+                            expect(token).toEqual([]);
                             done(err);
                         });
                     } else {
@@ -246,7 +248,7 @@ describe('MongooseToken Tests', function () {
                             expect(result).not.toBeNull();
                             model.findRandomTokenName(function (err, token) {
                                 expect(err).toBeNull();
-                                expect(token).toBeUndefined();
+                                expect(token).toEqual([]);
                                 done(err);
                             });
                         });
@@ -255,7 +257,6 @@ describe('MongooseToken Tests', function () {
                     }
                 });
             });
-
         });
 
         describe('INSTANCE', function () {
@@ -313,7 +314,8 @@ describe('MongooseToken Tests', function () {
                             expect(result).not.toBeNull();
                             model.findRandomTokenName(function (err, token) {
                                 expect(err).toBeNull();
-                                expect(model._id.toString()).toBe(token.modelId);
+                                expect(token).toBeDefined();
+                                expect(model._id.toString()).toBe(token[0].modelId);
                                 done(err);
                             });
                         });
@@ -333,7 +335,7 @@ describe('MongooseToken Tests', function () {
                             expect(result).not.toBeNull();
                             model.findRandomTokenName(function (err, token) {
                                 expect(err).toBeNull();
-                                expect(token).toBeUndefined();
+                                expect(token).toEqual([]);
                                 done(err);
                             });
                         });
@@ -345,7 +347,7 @@ describe('MongooseToken Tests', function () {
 
         });
 
-        it('Only create one token per model item', function (done) {
+        it('Only create one token per model item if unique set to true (default)', function (done) {
             Model.create({}, function (err, model) {
                 expect(err).toBeNull();
                 expect(model).not.toBeNull();
@@ -358,7 +360,9 @@ describe('MongooseToken Tests', function () {
                             expect(model._id.toString()).toBe(token.modelId);
                             model.findRandomTokenName(function (err, token) {
                                 expect(err).toBeNull();
-                                expect(model._id.toString()).toBe(token.modelId);
+                                expect(token).toBeDefined();
+                                expect(token.length).toBe(1);
+                                expect(model._id.toString()).toBe(token[0].modelId);
                                 model.randomTokenName(function(err, result){
                                     result.find({}, function(err, result){
                                         expect(err).toBeNull();
@@ -376,6 +380,82 @@ describe('MongooseToken Tests', function () {
                     });
                 } else {
                     done('Error creating token');
+                }
+            });
+        });
+
+        it('Create Multiple tokens per model if unique set to false ', function (done) {
+            var schema = new mongoose.Schema();
+            schema.plugin(Index.plugin,
+                {
+                    tableName:'randomTableNameUnique',
+                    unique:false
+                }
+            );
+            var Model = db.model('randomTableNameUnique', schema);
+
+            Model.create({}, function (err, model) {
+                expect(err).toBeNull();
+                expect(model).not.toBeNull();
+                if (model) {
+                    model.createRandomTableNameUnique(function (err, result) {
+                        expect(err).toBeNull();
+                        expect(result).not.toBeNull();
+                        model.createRandomTableNameUnique(function (err, token) {
+                            expect(err).toBeNull();
+                            expect(model._id.toString()).toBe(token.modelId);
+                            model.findRandomTableNameUnique(function (err, tokens) {
+                                expect(err).toBeNull();
+                                console.log('TOkens ', tokens);
+                                expect(tokens.length).toBe(2);
+                                model.randomTableNameUnique(function(err, result){
+                                    result.find({}, function(err, result){
+                                        expect(err).toBeNull();
+                                        expect(result).toBeDefined();
+                                        if(result){
+                                            expect(result.length).toBe(2);
+                                            done(err);
+                                        }else{
+                                            done('Error retreiving tokens');
+                                        }
+                                    });
+                                });
+                            });
+                        });
+                    });
+                } else {
+                    done('Error creating token');
+                }
+            });
+        });
+
+        it('Extend the schema with the schema passed through the options object', function (done) {
+            var schema = new mongoose.Schema();
+            schema.plugin(Index.plugin,
+                {
+                    tableName:'randomTableName2',
+                    schema: {
+                        name:String,
+                        customType: {
+                            type: Boolean,
+                            'default': true
+                        }
+                    }
+                }
+            );
+            var Model = db.model('randomTableName2', schema);
+
+            Model.create({}, function (err, model) {
+                expect(err).toBeNull();
+                expect(model).toBeDefined();
+                if (model) {
+                    model.createRandomTableName2({name: 'TestApplication'}, function (err, result) {
+                        expect(result.name).toBe('TestApplication');
+                        expect(result.customType).toBe(true);
+                        done(err);
+                    });
+                } else {
+                    done('Error creating new model');
                 }
             });
         });
