@@ -460,5 +460,22 @@ describe('MongooseToken Tests', function () {
             });
         });
 
+        it('Be able to generate a salt', function (done) {
+            Model.salt(3, function(err, result){
+                expect(err).toBeNull();
+                expect(result).toBeDefined();
+                done();
+            });
+        });
+
+        it('Be able to generate a hash', function (done) {
+            Model.hash('testing', 3, function(err, result){
+                expect(err).toBeNull();
+                expect(result).toBeDefined();
+                done();
+            });
+        });
+
+
     });
 });
