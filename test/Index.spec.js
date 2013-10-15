@@ -392,7 +392,7 @@ describe('MongooseToken Tests', function () {
                     unique:false
                 }
             );
-            var Model = db.model('randomTableNameUnique', schema);
+            var Model = db.model('randomTableNameUniqueModel', schema);
 
             Model.create({}, function (err, model) {
                 expect(err).toBeNull();
@@ -406,7 +406,6 @@ describe('MongooseToken Tests', function () {
                             expect(model._id.toString()).toBe(token.modelId);
                             model.findRandomTableNameUnique(function (err, tokens) {
                                 expect(err).toBeNull();
-                                console.log('TOkens ', tokens);
                                 expect(tokens.length).toBe(2);
                                 model.randomTableNameUnique(function(err, result){
                                     result.find({}, function(err, result){
