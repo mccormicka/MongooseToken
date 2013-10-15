@@ -475,7 +475,5 @@ describe('MongooseToken Tests', function () {
                 done();
             });
         });
-
-
     });
 });
